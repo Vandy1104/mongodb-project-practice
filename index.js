@@ -22,12 +22,12 @@ mongoose.connect(mongodbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 });
 
 //Test the connectivity
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function(){
-  console.log('We are connected to Mongo DB');
-});
+// const db = mongoose.connection;
+//
+// db.on('error', console.error.bind(console, 'connection error:'));
+// db.once('open', function(){
+//   console.log('We are connected to Mongo DB');
+// });
 
 app.use((req, res, next)=>{
   console.log(`${req.method} request for ${req.url}`);
@@ -85,6 +85,35 @@ app.get('/showProducts', (req, res)=>{
     res.send(result);
   })
 });
+
+//Delete a product
+app.delete('/deleteProduct/:id', (req, res)=>{
+  const idParam = req.params.id;
+  Prod.findOne({_id:idParam}, (err, productResult)=>{
+    if(productResult){
+      Prod.deleteOne({_id:idParam}, err=>{
+        res.send('Deleted! Happy???');
+      });
+    } else {
+      res.send('Not Found')
+    }
+  }).catch(err=> res.send(err));
+});
+
+//Update a product
+app.patch('/updateProduct/:id', (req, res)=>{
+  const idParam = req.params.id;
+  Prod.findById(idParam, (err, productResult)=>{
+    const updatedProduct = {
+      name: req.body.name,
+      price : req.body.price
+    };
+    Prod.updateOne({_id:idParam}, updatedProduct).then(result=>{
+      res.send(result);
+    }).catch(err=> res.send(err));
+  }).catch(err=> res.send('Not Found'));
+});
+
 
 //Register users
 app.post('/registerUser', (req, res)=>{
